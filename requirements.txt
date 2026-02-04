@@ -1,2 +1,5 @@
-pandas
-numpy
+llama-index
+openai
+chromadb
+streamlit
+python-dotenv
