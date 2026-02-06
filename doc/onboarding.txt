@@ -1,0 +1,1 @@
+La empresa utiliza Python, SQL y Airflow para sus pipelines de datos.
