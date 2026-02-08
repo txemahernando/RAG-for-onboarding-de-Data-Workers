@@ -1,29 +1,26 @@
-# ============================
 # ingest.py
-# ============================
-import os
+from pathlib import Path
 from dotenv import load_dotenv
-
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-# Cargar variables de entorno
 load_dotenv()
 
 DOCS_PATH = "doc"
-VECTORSTORE_PATH = "vectorstore.index"
 
-# 1. Cargar documentos con metadata
+BASE_DIR = Path(__file__).resolve().parent
+VECTORSTORE_PATH = BASE_DIR.parent.parent / "vectorstore"
+
 loader = DirectoryLoader(
     DOCS_PATH,
     glob="**/*.md",
     show_progress=True
 )
+
 documents = loader.load()
 
-# Añadir metadata según la ruta
 for doc in documents:
     path = doc.metadata.get("source", "")
     if "domains" in path:
@@ -33,19 +30,16 @@ for doc in documents:
     else:
         doc.metadata["doc_type"] = "glossary"
 
-# 2. Dividir documentos
-text_splitter = RecursiveCharacterTextSplitter(
+splitter = RecursiveCharacterTextSplitter(
     chunk_size=800,
     chunk_overlap=100
 )
-splits = text_splitter.split_documents(documents)
 
-# 3. Crear embeddings
+splits = splitter.split_documents(documents)
+
 embeddings = OpenAIEmbeddings()
 
-# 4. Crear y guardar vectorstore
 vectorstore = FAISS.from_documents(splits, embeddings)
 vectorstore.save_local(VECTORSTORE_PATH)
 
-print("✅ Ingesta completada y vectorstore guardado")
-
+print("✅ Vectorstore creado correctamente")
